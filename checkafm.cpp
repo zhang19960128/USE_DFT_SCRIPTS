@@ -11,14 +11,18 @@ int checkneighbor(std::vector<std::vector<double> > &posit_spin,std::vector<std:
     double distance=0.0;
     size_t element=posit_spin.size();
     int yes=1;
+    double temp=0.0;
     for(int i=0;i<element;i++){
     if(i==site){
         continue;
     }
     distance=0.0;
     for(size_t j=0;j<3;j++){
-       distance=distance+std::fabs(posit_spin[i][j]-posit_spin[site][j]);
+        temp=posit_spin[i][j]-posit_spin[site][j];
+        temp=period*(temp/period-round(temp/period));
+       distance=distance+temp*temp;
        }
+    distance=sqrt(distance);
     //std::cout<<"site: "<<site<<" element: "<<i<<" distance: "<<distance<<std::endl;
     if(std::fabs(distance-2.0)<0.0001){
         yes=yes*(posit_spin[site][3]*posit_spin[i][3]<-0.0000001);
