@@ -9,7 +9,7 @@ def obtainnatoms(filedftinput):
       arra=arra[1].split(',');
       natom=int(arra[0]);
   return natom;
-def writenewscf(natoms,scfin,atomposition,filename):
+def writenewscf(natoms,scfin,atomposition,filename,unit):
     scffiles=open(scfin,'r');
     newfilename=open(filename,'w');
     lines=scffiles.readlines();
@@ -18,7 +18,7 @@ def writenewscf(natoms,scfin,atomposition,filename):
     skiplines=0;
     for i in range(len(lines)):
       if lines[i].find("ATOMIC_POSITIONS (angstrom)")!=-1:
-        newfilename.write("ATOMIC_POSITIONS (angstrom)\n");
+        newfilename.write("ATOMIC_POSITIONS ("+unit+")\n");
         tick2=i;
         for j in range(natoms):
           temp="";
@@ -33,9 +33,9 @@ def writenewscf(natoms,scfin,atomposition,filename):
         newfilename.write(lines[i]);
     newfilename.close();
     scffiles.close();
-def updatedft(dftinput,dftoutput):
+def updatedft(dftinput,dftoutput,unit):
     dftainput='DFTAFTER.in';
-    natoms=obtainnatoms(dftinput)
+    natoms=obtainnatoms(dftinput);
     filere=open(dftoutput,'r');
     lines=filere.readlines();
     Endsignal=0;
@@ -49,5 +49,38 @@ def updatedft(dftinput,dftoutput):
           line=lines[i+j+1].split();
           for k in range(3):
             atomsp[j][k]=float(line[k+1]);
-    writenewscf(natoms,dftinput,atomsp,dftainput)
-updatedft(sys.argv[1],sys.argv[2])
+    writenewscf(natoms,dftinput,atomsp,dftainput,unit)
+def switcryandcar(dftinput):
+    dftainput='DFTAFTER.in'
+    natoms=obtainnatoms(dftinput);
+    filescfin=open(dftinput,'r');
+    lines=filescfin.readlines();
+    length=len(lines);
+    axis=np.zeros((3,3));
+    atomsp=np.zeros((natoms,3));
+    atomtrans=np.zeros((natoms,3));
+    for i in range(length):
+      if lines[i].find("CELL_PARAMETERS")!=-1:
+        for j in range(3):
+          line=lines[i+j+1].split();
+          for k in range(3):
+            axis[j][k]=float(line[k]);
+      if lines[i].find("ATOMIC_POSITIONS")!=-1 and lines[i].find("angstrom")!=-1:
+        for j in range(natoms):
+          line=lines[i+j+1].split();
+          for k in range(3):
+            atomsp[j][k]=float(line[k+1]);
+        transmatrix=np.matrix.transpose(np.linalg.inv(axis));
+        for j in range(natoms):
+          atomtrans[j][:]=np.matmul(transmatrix,atomsp[j][:]);
+        writenewscf(natoms,dftinput,atomtrans,dftainput,'crystal');
+      if lines[i].find("ATOMIC_POSTIONS")!=-1 and lines[i].find("crystal")!=-1:
+        for j in range(natoms):
+          line=lines[i+j+1].split();
+          for k in range(3):
+            atomsp[j][k]=float(line[k+1]);
+        transmatrix=np.matrix.transpose(axis);
+        for j in range(natoms):
+          atomtrans[j][:]=np.matmul(transmatrix,atomsp[j][:]);
+        writenewscf(natoms,dftinput,atomtrans,dftainput,'angstrom');
+switcryandcar('bto.in')
