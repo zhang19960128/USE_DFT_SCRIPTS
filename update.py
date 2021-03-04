@@ -17,7 +17,7 @@ def writenewscf(natoms,scfin,atomposition,filename,unit):
     tick2=0;
     skiplines=0;
     for i in range(len(lines)):
-      if lines[i].find("ATOMIC_POSITIONS (angstrom)")!=-1:
+      if "ATOMIC_POSITIONS".lower() in lines[i].lower() and "angstrom" in lines[i].lower():
         newfilename.write("ATOMIC_POSITIONS ("+unit+")\n");
         tick2=i;
         for j in range(natoms):
@@ -60,12 +60,12 @@ def switcryandcar(dftinput):
     atomsp=np.zeros((natoms,3));
     atomtrans=np.zeros((natoms,3));
     for i in range(length):
-      if lines[i].find("CELL_PARAMETERS")!=-1:
+      if "CELL_PARAMETERS".lower() in lines[i].lower():
         for j in range(3):
           line=lines[i+j+1].split();
           for k in range(3):
             axis[j][k]=float(line[k]);
-      if lines[i].find("ATOMIC_POSITIONS")!=-1 and lines[i].find("angstrom")!=-1:
+      if "ATOMIC_POSITIONS".lower() in lines[i].lower() and "angstrom" in lines[i].lower():
         for j in range(natoms):
           line=lines[i+j+1].split();
           for k in range(3):
@@ -74,7 +74,7 @@ def switcryandcar(dftinput):
         for j in range(natoms):
           atomtrans[j][:]=np.matmul(transmatrix,atomsp[j][:]);
         writenewscf(natoms,dftinput,atomtrans,dftainput,'crystal');
-      if lines[i].find("ATOMIC_POSTIONS")!=-1 and lines[i].find("crystal")!=-1:
+      if "ATOMIC_POSITIONS".lower() in lines[i].lower() and "crystal" in lines[i].lower():
         for j in range(natoms):
           line=lines[i+j+1].split();
           for k in range(3):
