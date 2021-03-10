@@ -51,7 +51,7 @@ def updatedft(dftinput,dftoutput,unit):
             atomsp[j][k]=float(line[k+1]);
     writenewscf(natoms,dftinput,atomsp,dftainput,unit)
 def switcryandcar(dftinput):
-    dftainput='DFTAFTER.in2'
+    dftainput='DFTAFTER.in'
     natoms=obtainnatoms(dftinput);
     filescfin=open(dftinput,'r');
     lines=filescfin.readlines();
@@ -73,7 +73,7 @@ def switcryandcar(dftinput):
         transmatrix=np.matrix.transpose(np.linalg.inv(axis));
         for j in range(natoms):
           atomtrans[j][:]=np.matmul(transmatrix,atomsp[j][:]);
-     #   writenewscf(natoms,dftinput,atomtrans,dftainput,'crystal');
+        writenewscf(natoms,dftinput,atomtrans,dftainput,'crystal');
       if "ATOMIC_POSITIONS".lower() in lines[i].lower() and "crystal" in lines[i].lower():
         for j in range(natoms):
           line=lines[i+j+1].split();
@@ -83,4 +83,4 @@ def switcryandcar(dftinput):
         for j in range(natoms):
           atomtrans[j][:]=np.matmul(transmatrix,atomsp[j][:]);
         writenewscf(natoms,dftinput,atomtrans,dftainput,'angstrom');
-switcryandcar('btotemp2.in')
+switcryandcar('bfo07.in')
